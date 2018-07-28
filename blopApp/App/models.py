@@ -40,9 +40,9 @@ class UserModel(models.Model):
     u_password = models.CharField(max_length=256)
     u_email = models.CharField(max_length=32)
     u_authority = models.IntegerField(default=READ_POWER)   # 用户权限
-    u_posts = models.ForeignKey(PostModel)
+    u_posts = models.ForeignKey(PostModel,default=0)
     is_del = models.BooleanField(default=False)
-    is_act = models.BooleanField(max_length=False)
+    is_act = models.BooleanField(default=False)
 
 
     def set_pwd(self,pwd):
