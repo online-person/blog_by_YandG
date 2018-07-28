@@ -14,33 +14,12 @@ DEL_SELF_POWER  = 2
 DEL_OTHER_POWER = 3
 TALLER_POWER = 4
 
-# Create your models here.
-class PostModel(models.Model):
-    p_title = models.CharField(max_length=100)  # 标题
-    p_owner = models.CharField(max_length=20)  # 所有者
-    p_comment = models.TextField()              # 内容
-    is_del = models.BooleanField(max_length=False)  # 是否删除
-
-
-    def del_post(self,u_name):
-        user = UserModel.objects.get(u_name=u_name)
-        post_owner = UserModel.objects.get(u_name=self.p_owner)
-
-        if u_name == self.p_owner:
-            return "del ok"
-        elif user.u_authority > post_owner.u_authority:
-            return "del ok"
-        else:
-            return "del failed"
-
-
 class UserModel(models.Model):
     u_name = models.CharField(max_length=20,unique=True)
     u_icon = models.ImageField(upload_to="icons")
     u_password = models.CharField(max_length=256)
     u_email = models.CharField(max_length=32)
     u_authority = models.IntegerField(default=READ_POWER)   # 用户权限
-    u_posts = models.ForeignKey(PostModel,default=0)
     is_del = models.BooleanField(default=False)
     is_act = models.BooleanField(default=False)
 
@@ -55,6 +34,25 @@ class UserModel(models.Model):
 
     def verify_pwd(self,pwd):
         return self.u_password == self.generate_pwd(pwd)
+
+
+class PostModel(models.Model):
+    p_title = models.CharField(max_length=100)  # 标题
+    p_owner = models.CharField(max_length=20)  # 所有者
+    p_comment = models.TextField()              # 内容
+    is_del = models.BooleanField(max_length=False)  # 是否删除
+    p_user = models.ForeignKey(UserModel, default=0)
+
+    def del_post(self,u_name):
+        user = UserModel.objects.get(u_name=u_name)
+        post_owner = UserModel.objects.get(u_name=self.p_owner)
+
+        if u_name == self.p_owner:
+            return "del ok"
+        elif user.u_authority > post_owner.u_authority:
+            return "del ok"
+        else:
+            return "del failed"
 
 
 class PostList(models.Model):
