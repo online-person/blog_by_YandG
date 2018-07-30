@@ -25,7 +25,7 @@ SECRET_KEY = 'd%sx%g-tn9!-6j3c$*yy+gw&z_z2wh_2!=htka61p%=&6se8qc'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'App.apps.AppConfig',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +55,8 @@ ROOT_URLCONF = 'blopApp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        ,
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,6 +67,7 @@ TEMPLATES = [
             ],
         },
     },
+
 ]
 
 WSGI_APPLICATION = 'blopApp.wsgi.application'
@@ -118,3 +121,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR,'static')
+]
+MEDIA_ROOT=os.path.join(BASE_DIR, 'static/upload')
+
+
+EMAIL_HOST = 'smtp.163.com'
+
+EMAIL_PORT = 25
+
+EMAIL_HOST_USER = '16601156043@163.com'
+
+# EMAIL_USE_TLS = False
+# EMAIL_USE_SSL = True
+
+EMAIL_HOST_PASSWORD = "5714630yy"

@@ -1,0 +1,46 @@
+{% extends 'base/base_regis.html' %}
+{% load static %}
+{% block ExtendCS %}
+    {{ block.super }}
+{% endblock %}
+
+{% block ExtendJS %}
+    {{ block.super }}
+    <script src="{% static 'user/js/user.js' %} "></script>
+{% endblock %}
+
+{% block content %}
+    <div id="u_regis" class="container">
+        <form action="{% url 'blog:register' %}" method="post" enctype="multipart/form-data" onsubmit="return check_all()">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="exampleInputEmail1">User Name</label>
+                <input type="text" class="form-control" id="user_name" name="user_Name" placeholder="username">
+                <span id="unameinfo"></span>
+            </div>
+            <div class="form-group">
+                <label for="exampleInputEmail1">Email address</label>
+                <input type="email" class="form-control" id="user_email"  name="user_Email" placeholder="Email">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">Password</label>
+                <input type="password" class="form-control" id="user_pwd" name="user_Password" placeholder="Password">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">Confirm Password</label>
+                <input type="password" class="form-control" id="user_c_pwd" name="user_Con_Password" placeholder="Password">
+                <span id="ucpwdinfo"></span>
+            </div>
+            <div class="form-group">
+                <label for="exampleInputFile">ICON</label>
+                <input type="file" id="exampleInputFile" name="user_Icon">
+
+            </div>
+
+            <button type="submit" class="btn btn-success btn-block">Submit</button>
+        </form>
+
+
+    </div>
+
+{% endblock %}

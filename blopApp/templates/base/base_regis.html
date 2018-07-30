@@ -1,0 +1,6 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block ExtendJS %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'base/js/md5.js' %}"></script>
+{% endblock %}
