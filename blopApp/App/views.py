@@ -84,3 +84,20 @@ def activate(request):
     user.save()
 
     return HttpResponse('激活成功{}'.format(user_token))
+
+def create_post(request):
+    return render(request, 'post/create_post.html',{})
+
+
+def edit_post(request):
+    return render(request,'post/edit_post.html',{})
+
+def read_post(request):
+    return render(request,'post/read_post.html',{})
+
+def search(request):
+    return render(request,'post/search.html',{})
+
+def post_list(request):
+    return render(request,'post/post_list.html',{})
+
