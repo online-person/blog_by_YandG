@@ -4,11 +4,11 @@ from datetime import datetime
 from django.db import models
 
 # 用户权限说明
-# 0 阅读
-# 1 发帖
-# 2 删自己的帖子或者修改
-# 3 删别人的帖子，置顶帖子 ，删除不当言论 管理者
-# 4 最高权限 boss
+# 1 阅读
+# 2 发帖
+# 3 删自己的帖子或者修改
+# 4 删别人的帖子，置顶帖子,恢复帖子 ，删除不当言论 管理者
+# 5 最高权限 boss
 READ_POWER = 1
 WRITE_POWER = 2
 MODIFY_POWER  = 3
@@ -19,17 +19,18 @@ TALLER_POWER = 5
 def authority(auth):  # 帖子相关权限验证
     def wrapper(func):
         def inner(*args, **kwargs):
-            post, user_id = args[:2]
+            post, request = args[:2]
+            user_id = request.session.get('user_id')
             user = UserModel.objects.filter(id=user_id).first()
-            if post.p_user == user:
+
+            if (post.p_user == user):
                 if user.u_authority < auth:
-                    return "you has not authority"
+                    return "you has not authority",403
                 func(*args,**kwargs)
             else:
                 if user.u_authority <= auth:
-                    return "you has not authority"
+                    return "you has not authority",403
                 func(*args, **kwargs)
-
         return inner
     return wrapper
 
@@ -60,27 +61,42 @@ class UserModel(models.Model):
 class PostModel(models.Model):
     p_title = models.CharField(max_length=100)  # 标题
     p_comment = models.TextField()              # 内容
-    is_del = models.BooleanField(max_length=False)  # 是否删除
+    is_del = models.BooleanField(default=False)  # 是否删除
     p_user = models.ForeignKey(UserModel, default=0)
     p_created = models.DateTimeField(auto_now_add=datetime.now())
     p_update = models.DateTimeField(auto_now=datetime.now())
 
     @authority(MODIFY_POWER)  # 验证删除权限
-    def del_post(self,u_id):
+    def deleted(self,request):
         self.is_del = True
         self.save()
 
-    @authority(MODIFY_POWER)  # 验证修改权限
-    def modify_post(self,u_id,data):
-        self.p_comment = data
+    @authority(TALLER_MODIFY_POWER)
+    def recovery(self,request):
+        self.is_del = False
         self.save()
 
-    @authority(WRITE_POWER)  # 验证写权限
-    def create_post(self,u_id,data=None):
-        self.p_title = data.title
-        self.p_comment = data.comment
-        self.p_user = data.user
+    @authority(MODIFY_POWER)  # 验证修改权限
+    def modify(self,request):
+        self.p_comment = request.POST.get("content")
+        self.p_title = request.POST.get("title")
+        self.save()
 
+    def create_post(self,user,POST):
+        self.p_title = POST.get("title")
+        self.p_comment = POST.get("content")
+        self.p_user = user
+        self.save()
+
+    def toDict(self):
+        return {
+            'title': self.p_title,
+            'user': self.p_user.u_name,
+            'content': self.p_comment,
+            'create_time': self.p_created,
+            'update_time': self.p_update,
+            'post_id':self.id
+        }
 
 
 
