@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import loader
 
-from App.models import UserModel, DEL_SELF_POWER
+from App.models import UserModel, MODIFY_POWER
 
 
 def index(request):
@@ -80,7 +80,7 @@ def activate(request):
     user = UserModel.objects.get(pk=user_id)
 
     user.isactive = True
-    user.u_authority = DEL_SELF_POWER
+    user.u_authority = MODIFY_POWER
     user.save()
 
     return HttpResponse('激活成功{}'.format(user_token))

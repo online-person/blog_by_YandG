@@ -1,5 +1,6 @@
 import hashlib
 
+from datetime import datetime
 from django.db import models
 
 # 用户权限说明
@@ -8,11 +9,29 @@ from django.db import models
 # 2 删自己的帖子或者修改
 # 3 删别人的帖子，置顶帖子 ，删除不当言论 管理者
 # 4 最高权限 boss
-READ_POWER = 0
-WRITE_POWER = 1
-DEL_SELF_POWER  = 2
-DEL_OTHER_POWER = 3
-TALLER_POWER = 4
+READ_POWER = 1
+WRITE_POWER = 2
+MODIFY_POWER  = 3
+TALLER_MODIFY_POWER = 4
+TALLER_POWER = 5
+
+
+def authority(auth):  # 帖子相关权限验证
+    def wrapper(func):
+        def inner(*args, **kwargs):
+            post, user_id = args[:2]
+            user = UserModel.objects.filter(id=user_id).first()
+            if post.p_user == user:
+                if user.u_authority < auth:
+                    return "you has not authority"
+                func(*args,**kwargs)
+            else:
+                if user.u_authority <= auth:
+                    return "you has not authority"
+                func(*args, **kwargs)
+
+        return inner
+    return wrapper
 
 class UserModel(models.Model):
     u_name = models.CharField(max_length=20,unique=True)
@@ -35,27 +54,37 @@ class UserModel(models.Model):
     def verify_pwd(self,pwd):
         return self.u_password == self.generate_pwd(pwd)
 
+    def isdel(self):
+        pass
 
 class PostModel(models.Model):
     p_title = models.CharField(max_length=100)  # 标题
-    p_owner = models.CharField(max_length=20)  # 所有者
     p_comment = models.TextField()              # 内容
     is_del = models.BooleanField(max_length=False)  # 是否删除
     p_user = models.ForeignKey(UserModel, default=0)
+    p_created = models.DateTimeField(auto_now_add=datetime.now())
+    p_update = models.DateTimeField(auto_now=datetime.now())
 
-    def del_post(self,u_name):
-        user = UserModel.objects.get(u_name=u_name)
-        post_owner = UserModel.objects.get(u_name=self.p_owner)
+    @authority(MODIFY_POWER)  # 验证删除权限
+    def del_post(self,u_id):
+        self.is_del = True
+        self.save()
 
-        if u_name == self.p_owner:
-            return "del ok"
-        elif user.u_authority > post_owner.u_authority:
-            return "del ok"
-        else:
-            return "del failed"
+    @authority(MODIFY_POWER)  # 验证修改权限
+    def modify_post(self,u_id,data):
+        self.p_comment = data
+        self.save()
+
+    @authority(WRITE_POWER)  # 验证写权限
+    def create_post(self,u_id,data=None):
+        self.p_title = data.title
+        self.p_comment = data.comment
+        self.p_user = data.user
+
+
+
 
 
 class PostList(models.Model):
-    pl_name = models.CharField(max_length=100)
-    pl_user = models.CharField(max_length=20)
-    pl_user_icon = models.CharField(max_length=100)
+    pl_post = models.ForeignKey(PostModel)
+    pl_user = models.ForeignKey(UserModel)
