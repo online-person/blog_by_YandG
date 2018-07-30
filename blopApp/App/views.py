@@ -5,12 +5,15 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import loader
 
-from App.models import UserModel, MODIFY_POWER
+from App.models import UserModel, MODIFY_POWER, PostModel
+from django.views.decorators.csrf import csrf_exempt
 
 
 def index(request):
     return HttpResponse("hello world")
 
+
+@csrf_exempt
 def user_register(request):
     if request.method == "GET":
         data = {
@@ -47,7 +50,6 @@ def send_email_test(uname,ucemail,token):
          'uurl':"http://127.0.0.1/blog/activate/?user_token={}".format(token)
      }
     html_mes = temp.render(data)
-    print("---------------------------------------")
     send_mail(
          'Subject {}'.format(uname),
          '',
@@ -55,7 +57,6 @@ def send_email_test(uname,ucemail,token):
          [ucemail,],
          html_message = html_mes,
      )
-    print("---------------------------------------")
 
 def check_name(request):
     u_name = request.GET.get('u_name')
@@ -84,3 +85,36 @@ def activate(request):
     user.save()
 
     return HttpResponse('激活成功{}'.format(user_token))
+
+@csrf_exempt  # 取消csrf验证
+def login(request):
+    if request.method == "GET":
+        print("-------------")
+        return HttpResponse("login")
+    else:
+        name = request.POST.get("name")
+        user = UserModel.objects.filter(u_name=name).first()
+        u_pwd = request.POST.get("password")
+        if user.verify_pwd(u_pwd):
+
+            request.session['user_id'] = user.id
+            return HttpResponse("login ok")
+        else:
+            return HttpResponse("密码 错误")
+
+
+def logout(request):
+    request.session.flush()
+    return HttpResponse("退出成功")
+
+
+def user_info(request):
+    user_id = request.session.get("user_id")
+    user = UserModel.objects.filter(id=user_id).first()
+    user_data = {
+        "name":user.u_name,
+        "email":user.u_email,
+        "icon":str(user.u_icon),
+    }
+    return JsonResponse(data=user_data)
+

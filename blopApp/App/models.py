@@ -49,7 +49,7 @@ class UserModel(models.Model):
     def generate_pwd(self,pwd):
         sha = hashlib.sha512()
         sha.update(pwd.encode("utf-8"))
-        return sha.hexdigest
+        return sha.hexdigest()
 
     def verify_pwd(self,pwd):
         return self.u_password == self.generate_pwd(pwd)
